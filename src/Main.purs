@@ -25,12 +25,17 @@ main = HA.runHalogenAff do
 data Action = Increment | Decrement
 
 cardpos :: Number -> CSS.CSS
-cardpos n = do CSS.border CSS.solid (CSS.px 5.0) CSS.red
-               CSS.height (CSS.px 5.0)
-               CSS.width  (CSS.px 5.0)
-               CSS.marginLeft (CSS.px $ 20.0 + toNumber (floor n `mod` 5) * 100.0)
-               CSS.rule (CSS.Property (CSS.Key $ CSS.Plain "transition") (CSS.Value $ CSS.Plain "margin 1s"))
+cardpos n = let modn = toNumber (floor n `mod` 5) in
+            do CSS.border CSS.solid (CSS.px 1.0) CSS.gray
+               CSS.backgroundColor $ CSS.lighten (modn / 20.0) CSS.skyblue
+               CSS.height (CSS.px 300.0)
+               CSS.width  (CSS.px 500.0)
+               CSS.marginLeft (CSS.px $ 20.0 + modn * 50.0)
                CSS.position CSS.absolute
+               CSS.zIndex $ 5 - floor modn
+               CSS.transform (CSS.Transformation (CSS.Value $ CSS.Plain $ "scale(" <> show (1.0 - modn * 0.1) <> ")"))
+               CSS.rule (CSS.Property (CSS.Key $ CSS.Plain "transition") (CSS.Value $ CSS.Plain "all 1s"))
+
 
 component =
   H.mkComponent
@@ -46,7 +51,6 @@ component =
       [ HH.button [ HE.onClick \_ -> Just Decrement ] [ HH.text "-" ]
       , HH.button [ HE.onClick \_ -> Just Increment ] [ HH.text "+" ]
       ] <> (map (\pos -> HH.div [ HC.style $ cardpos $ (state + toNumber pos) ] [ HH.text $ "" ]) [1,2,3,4,5]) )
-     -- <> (map (\_ -> (HH.div [ HC.style $ cardpos $ state ] [ HH.text $ "" ])) (1 .. 5))
 
   handleAction = case _ of
     Increment -> H.modify_ \s -> s + 1.0
